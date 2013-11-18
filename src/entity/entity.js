@@ -513,6 +513,17 @@
 			 */
 			this.falling = false;
 			/**
+			 * fall through platform state of object<br>
+			 * true if the object can fall through platform<br>
+			 * false if the object is standing on solid<br>
+			 * @readonly
+			 * @public
+			 * @type Boolean
+			 * @name fallthru
+			 * @memberOf me.ObjectEntity
+			 */
+			this.fallthru = false;
+			/**
 			 * jumping state of the object<br>
 			 * equal true if the entity is jumping<br>
 			 * @readonly
@@ -1030,9 +1041,18 @@
 					// going down, collision with the floor
 					this.onladder = collision.yprop.isLadder || collision.yprop.isTopLadder;
 
+					var fallingthru = false;
+					if (this.fallthru) {
+						var collision2 = this.collisionMap.checkCollision(this.collisionBox, {x:-1,y:Math.max(1,this.vel.y)});
+						if (collision2.xprop && (collision2.xprop.isSolid || collision2.yprop.isSolid))
+							fallingthru = false;
+						else
+							fallingthru = true;
+					}
+					
 					if (collision.y > 0) {
-						if (collision.yprop.isSolid	|| 
-							(collision.yprop.isPlatform && (this.collisionBox.bottom - 1 <= collision.ytile.pos.y)) ||
+						if (collision.yprop.isSolid	||
+							(collision.yprop.isPlatform && !fallingthru && (this.collisionBox.bottom - 1 <= collision.ytile.pos.y)) ||
 							(collision.yprop.isTopLadder && !this.disableTopLadderCollision)) {
 							// adjust position to the corresponding tile
 							this.pos.y = ~~this.pos.y;
